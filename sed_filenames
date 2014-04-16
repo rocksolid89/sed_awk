@@ -1,0 +1,32 @@
+### sed filenames ####
+
+rename filenames using sed
+1. ability to parse unusual strings and generate desirable one
+
+Task: Test string removal from STDIN (test string:lurkmore.to?%D0%A1%D0%BB%D0%B0%D0%BA%D0%B0file_23) 
+
+sed -r -e 's/(lurkmore.*)(file.*)/\2/' - expects string on STDIN
+# -'r' - use extended regular expressions in the script file
+
+Task:  use 'for' loop and 'echo' to auto-parse all files
+
+ for i in `ls -A`; do echo $i; done #this will display all files in current directory
+ for i in `ls -A`; do echo $i | sed -r -e 's/(c)(h_.*)/\2/'; done #this will display files only just we needed
+ 
+Task: build new filename variable
+
+ for i in `ls -A`; do j=`echo $i | sed -r -e 's/(c)(h_.*)/\2/'`; echo "NEW NAME: $j";  done
+
+Task: copy convoluted file names to desired file names in separate directory
+
+  for i in `ls -A`; do j=`echo $i | sed -r -e 's/(c)(h_.*)/\2/'`; cp -v $i tmp/$j;  done
+
+Task: copy convoluted filenames to desired file names with prefix
+  
+  for i in `ls -A`; do j=`echo $i | sed -r -e 's/(c)(h_.*)/\2/'`; cp -v $i tmp/ada_programming_language_$j;done
+
+Task: move files
+  for i in `ls -A`; do j=`echo $i | sed -r -e 's/(c)(h_.*)/\2/'`; mv -v $i tmp/ada_programming_language_$j;done
+Task: change files suffix (html -> htmlx)
+  for i in `ls -A`; do j=`echo $i | sed -r -e 's/(.*)(\.html)/\1.htmlx/'`; echo $i;done
+

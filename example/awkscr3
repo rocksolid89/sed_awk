@@ -1,0 +1,11 @@
+BEGIN {OFS = "\t" ;print "Start processing file"}
+
+
+#main loop
+
+/dhcpcd/ {print}
+
+
+
+#end section 
+END { print "Processing completed" }

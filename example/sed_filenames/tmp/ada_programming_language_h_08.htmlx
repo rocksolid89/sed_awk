@@ -1,0 +1,467 @@
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=koi8-r">
+<title>Адское программирование.</title>
+</head>
+
+
+<body BGCOLOR="FFFFFF">
+<basefont size=3>
+<blockquote>
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+<!--- header --->
+
+
+
+<h2><a name="s8">8. Переименования</a></h2>
+
+
+<p align="JUSTIFY">
+Ада предоставляет программисту возможность осуществлять переименования.
+
+Следует заметить, что переименование иногда вызывает споры в организациях программирующих на Аде.
+
+Некоторым людям переименование нравится, а другим - нет.
+
+Существует несколько важных вещей, которые необходимо понять:
+
+<ul>
+<li>
+Переименование не создает нового пространства для данных.
+Оно просто создает новое имя для уже присутствующей сущности.
+<li>
+Не следует постоянно переименовывать одно и то же.
+Этип можно запутать всех, включая самого себя.
+<li>
+Переименование необходимо использовать для упрощения кода.
+Введение нового имени, в некоторых случаях, делает код более легко читаемым.
+</ul>
+
+
+<p align="JUSTIFY">
+При использовании переименований следует учитывать, что
+частое переименование объектов и их значений может создать трудности в понимании
+исходного текста.
+
+Хотя каждое новое имя может иметь определенный смысл в контексте нового пакета,
+при большом количестве последующих переименований становиться трудно отследить
+имя оригинала.
+
+
+
+<p>
+<h3><a name="s8.1">8.1 Уменьшение длин имен</a></h3>
+
+
+<p align="JUSTIFY">
+Переименование может быть полезно в случае наличия длинных имен пакетов:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Ada.Text_IO;
+<b>with</b>  Ada.Integer_Text_IO;
+
+<b>procedure</b> Gun_Aydin <b>is</b>
+
+    <b>package</b> TIO <b>renames</b>  Ada.Text_IO;
+    <b>package</b> IIO <b>renames</b>  Ada.Integer_Text_IO;
+
+    . . .
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+В этом случае, для внутреннего использования,
+длинное имя <tt>Ada.Text_IO</tt> переименовано в короткое имя <tt>TIO</tt>,
+а длинное имя <tt>Ada.Integer_Text_IO</tt> переименовано в короткое имя <tt>IIO</tt>.
+
+
+<p>
+<h3><a name="s8.2">8.2 Переименование знаков операций</a></h3>
+
+
+<p align="JUSTIFY">
+В некоторых случаях, знак операции для типа описанного в пакете, который указан в спецификаторе
+контекста <tt><b>with</b></tt>, не является непосредственно видимым.
+
+В действительности, правила Ады заключаются в том, что сущность, находящаяся в контексте,
+не будет непосредственно видимой до тех пор, пока не будет явно указано, что она
+непосредственно видима.
+
+Спецификатор использования <tt><b>use</b></tt> для пакета
+всегда делает непосредственно видимыми знаки операций операции для типа описанного в пакете,
+однако, спецификатор использования <tt><b>use</b></tt> одновременно
+делает непосредственно видимыми все публично доступные ресурсы пакета,
+что может оказаться не желательным.
+
+
+<p align="JUSTIFY">
+Переименование позволяет явно импортировать только те знаки операций,
+которые реально необходимы.
+
+При этом, видимость всех остальных ресурсов пакета остается не тронутой.
+
+Следующий пример показывает как это можно выполнить:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Ada.Text_IO;
+
+<b>procedure</b> diamond1 <b>is</b>
+
+    <b>package</b> TIO <b>renames</b>  Ada.Text_IO;
+
+    <b>function</b> "+" (L, R: TIO.Count) <b>return</b> TIO.Count <b>renames</b> TIO."+";
+    <b>function</b> "-" (L, R: TIO.Count) <b>return</b> TIO.Count <b>renames</b> TIO."-";
+
+    . . .
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+<!---
+Предварительное планирование использования знаков операций,
+в процессе разработки пакета, может облегчить
+последующее использование знаков операций.
+--->
+Использование знаков операций облегчается при предварительном планировании
+использования знаков операций в процессе разработки пакета.
+
+В следующем примере знаки операций переименовываются во вложенном пакете,
+который, в последствии, может быть сделан непосредственно выдимым с помощью
+спецификатора использования <tt><b>use</b></tt>:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>package</b> Nested  <b>is</b>
+
+    <b>type</b> T1     <b>is private</b>;
+    <b>type</b> Status <b>is</b> (Off, Low, Medium, Hight);
+
+    <b>package</b> Operators <b>is</b>
+
+        <b>function</b> "&gt;=" (L, R: Status) <b>return</b> Boolean <b>renames</b> Nested."&gt;=";
+        <b>function</b> "="  (L, R: Status) <b>return</b> Boolean <b>renames</b> Nested."=";
+
+    <b>end</b> Operators;
+
+<b>private</b>
+    <b>type</b> T1 <b>is</b> ...
+    . . .
+<b>end</b> Nested;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Показанный выше, вложенный пакет может быть сделан доступным
+путем указания спецификатора контекста
+"<tt><b>with</b> Nested;</tt>",
+и последующего спецификатора использования
+"<tt><b>use</b> Nested.Operators;</tt>" следующим образом:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b> Nested;
+
+<b>procedure</b> Test_Nested <b>is</b>
+
+    <b>use</b> Nested.Operators;
+    . . .
+<b>begin</b>
+    . . .
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Возможно, что не все одобрительно встретят подобную технику, однако
+она упрощает использование инфиксной формы знаков операций,
+поскольку позволяет отказаться от локального переименования.
+<!---
+не стоит использовать это повсеместно
+--->
+
+Следует заметить, что такое решение будет лучше чем использование
+спецификатора использования типа "<tt><b>use type</b></tt>",
+поскольку делает видимым только ограниченное множество знаков операций.
+
+Однако, такой подход требует дополнительных усилий от разработчика пакета.
+
+
+
+
+<p>
+<h3><a name="s8.3"></a>8.3 Переименование исключений</h3>
+
+
+<p align="JUSTIFY">
+В некоторых случаях полезно осуществить локальное переименование исключения:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Ada.IO_Exceptions;
+
+<b>package</b> My_IO <b>is</b>
+
+    Data_Error: <b>exception renames</b> Ada.IO_Exceptions.Data_Error;
+    . . .
+<b>end</b> My_IO;
+</pre></dir>
+</td></tr></table>
+
+
+
+<p>
+<h3><a name="s8.4"></a>8.4 Переименование компонентов</h3>
+
+
+<p align="JUSTIFY">
+Наиболее часто забываемым свойством переименования Ады
+является возможность предоставления собственного имени
+определенному компоненту составного типа:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Ada.Text_IO;
+
+<b>package</b> Rename_A_Variable <b>is</b>
+
+    Record_Count: <b>renames</b> Ada.Text_IO.Count;
+    . . .
+<b>end</b> Rename_A_Variable;
+</pre></dir>
+</td></tr></table>
+
+
+
+
+
+<p><h4><a name="s8.4.1"></a>8.4.1 Переименование отрезка массива</h4>
+
+
+<p align="JUSTIFY">
+Предположим, что у нас есть следующая строка:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+Name  : String(1..60);
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Причем, отрезок <tt>(1..30)</tt> - это фамилия (<i>last name</i>),
+отрезок <tt>(31..59)</tt> - имя (<i>first name</i>),
+символ в позиции <tt>60</tt> - это инициал отчества (<i>middle name</i>).
+
+Используя переименования мы можем выполнить следующее:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>declare</b>
+    Last    : String <b>renames</b> Name(1..30);
+    First   : String <b>renames</b> Name(31..59);
+    Middle  : String <b>renames</b> Name(60..60);
+<b>begin</b>
+    Ada.Text_IO.Put_Line(Last);
+    Ada.Text_IO.Put_Line(First);
+    Ada.Text_IO.Put_Line(Middle);
+<b>end</b>;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+В результате, каждый вызов <tt>Put_Line</tt> будет обращаться к именованному объекту,
+а не к диапазону индексов.
+
+При этом не осуществляется распределение дополнительного пространства для данных,
+а обеспечивается новое имя для доступа к уже существующим данным.
+
+<!--- ???
+Примечательно, что объект сохраняет те же самые индексы.
+--->
+
+
+
+
+
+<p><h4><a name="s8.4.2">8.4.2 Переименование поля записи</a></h4>
+
+
+<p align="JUSTIFY">
+Предположим, что у нас имеются следующие описания:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>subtype</b> Number_Symbol     <b>is</b> Character <b>range</b> '0' .. '9';
+<b>subtype</b> Address_Character <b>is</b> Character <b>range</b>
+    Ada.Characters.Latin_1.Space .. Ada.Characters.Latin_1.LC_Z;
+
+<b>type</b>  Address_Data  <b>is array</b> (Positive <b>range</b> <>) <b>of</b> Address_Character;
+<b>type</b>  Number_Data   <b>is array</b> (Positive <b>range</b> <>) <b>of</b> Number_Symbol;
+
+<b>type</b>  Phone_Number  <b>is</b>
+    <b>record</b>
+        Country_Code  : Number_Data(1..2);
+        Area_Code     : Number_Data(1..3);
+        Prefix        : Number_Data(1..3);
+        Last_Four     : Number_Data(1..4);
+    <b>end record</b>;
+
+<b>type</b>  Address_Record  <b>is</b>
+    <b>record</b>
+        The_Phone         : Phone_Number;
+        Street_Address_1  : Address_Data(1..30);
+        Street_Address_2  : Address_Data(1..20);
+        City              : Address_Data(1..25);
+        State             : Address_Data(1..2);
+        Zip               : Number_Data(1..5);
+        Plus_4            : Number_Data(1..4);
+    <b>end record</b>;
+
+
+One_Address_Record  : Address_Record;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Используя переименование, мы можем переименовать один из внутренних компонентов
+переменной записи <tt>One_Address_Record</tt> типа <tt>Address_Record</tt>,
+для прямого
+<!---
+непосредственного
+--->
+использования в программе.
+
+Например, мы можем переименовать <tt>Area_Code</tt> в инструкции блока:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>declare</b>
+    AC: Number_Data <b>renames</b> One_Address_Record.The_Phone.Area_Code;
+<b>begin</b>
+    . . .
+<b>end</b>;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Описание <tt>AC</tt> не требует никакого распределения дополнительного пространства данных.
+
+Вместо этого, оно локализует имя для компонента, который вложен в запись.
+
+При наличии компонентов записей с большим уровнем вложения,
+такой подход может оказаться весьма удобным.
+
+
+
+
+<p>
+<h3><a name="s8.5">8.5 Переименование библиотечного модуля</a></h3>
+
+
+<p align="JUSTIFY">
+Предположим, что в нашей библиотеке есть пакет который часто используется,
+и предположим, что этот пакет имеет довольно длинное имя.
+
+Пользуясь переименованием, мы можем
+указать этот пакет в спецификаторе контекста <tt><b>with</b></tt>,
+после чего, переименовать пакет с длинным именем,
+и скомпилировать полученный модуль с более коротким именем обратно в библиотеку.
+
+Например:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Graphics.Common_Display_Types;
+<b>package</b> CDT <b>renames</b> Graphics.Common_Display_Types;
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+Далее, мы можем использовать библиотечный модуль <tt>CDT</tt>, с более коротким именем,
+также как и библиотечный модуль <tt>Graphics.Common_Display_Types</tt>.
+
+При этом следует избегать переименований, когда новое имя очень сильно отличается от оригинала.
+
+
+
+
+
+
+
+
+<!--- footer --->
+
+
+
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+
+</blockquote>
+</body>
+</html>
+

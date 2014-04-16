@@ -1,0 +1,68 @@
+####awk printf function ######
+
+Feature: ability to control the width of fields in the output
+
+note:
+printf ("format", arguments)
+
+supported formats:
+  %с - ASCII
+  %d - decimals
+  %f - floating point
+  %s - strings
+
+NOTE: printf does not print new line character(s)
+this means you'll need to indicate newline character sequence: such as - \n in format section
+
+Note: default output is right justified. Use '-' to indicate left-justification
+
+General format section
+
+[-]width.precision[cdfs]
+
+width - influence the actual width of the column to be output
+precision - influence the numbers of places to the right of the decimal points
+    (also influences the number of strings to be printed from a string)
+    
+examples \ tasks:
+
+1. testing from command-line
+
+awk 'BEGIN { printf ("testing printf command") }'
+
+2. read 'animals' and format the output with printf
+
+awk 'BEGIN {printf ("Here is the output\n")} {printf("%s\n",$1)}' animals2
+
+3. apply width and precision to task #2
+
+awk 'BEGIN {printf ("Here is the output\n")} {printf("%.3s %s\n",$1,$2)}' animals
+
+awk 'BEGIN {printf ("Here is the output\n")} {printf("%20s %20s\n",$1,$2)}' animals
+  print will be right-justified by defaults
+
+4. left-justified task #3
+
+awk 'BEGIN {printf ("Here is the output\n")} {printf("%20s %-20s\n",$1,$2)}' animals
+  for left-justified output you need use dash "-" before format parameter
+  
+5. Parse animals4 file and properly represents strings, decimals and floating point values 
+
+awk 'BEGIN {printf("Start processing data\n")} {printf("%-s\t\t$%.2f\n",$1,$2)}' animals4
+
+6. format using printf file animals2
+  for this purpose we used awk script file awksrc2
+  
+  printf ("%s %d %s %s\n","animals class", i. ":", animals[i] )
+
+7. Applying upper and lower-case fromating to printf output
+
+  note: to convert items to upper-case we need to use awk function toupper(). And to lower-case - function tolower()
+  
+  printf("%-s%3d%1s%5s\n",tolower("ANIMAL CLASS"), i, ": ",toupper(animalclass[i]))
+
+  
+8. format output from /var/log/messages file
+    extract date, time, server, daemon and header
+    
+    

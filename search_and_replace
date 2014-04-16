@@ -1,0 +1,77 @@
+###sed search and replace####
+
+
+general usage:
+
+sed -e 's/find/replace/g' animals (replace 'find' with 'replace')
+
+  note: option g - for global replacement
+	LHS - left hand side- supports literals or regexes
+	RHS - right hand side - supports literals and back references
+	
+sed -e 's/linuxCBT/unixcbt/' - replaces 'linuxCBT' with 'unixcbt' on stdin to stdout
+sed -e 's/linuxCBT/unixcbt/I' - replaces 'linuxCBT' with 'unixcbt' on stdin to stdout (case insensetive)
+
+note: replacements occur only on the first match
+      'g' - with this option sed will replace all matches
+
+#task: remove all blank lines
+      substitute 'cat'  regardless of case with 'Tiger'
+
+sed -e 's/cat/Tiger/I' -e 's/cat/tiger/g'
+
+note: whenever using '-n' option, you must specify the print modifier '/.../..../p'
+
+note: you can use ';' for distinct multiple commands
+    sed -ne '/.../..../;/..../.../' 
+    
+###update source file - backup source file ###
+
+sed -i.bak - replaces old file 
+
+####search and replace - PART2- continue####
+
+sed -e '/adress/s/find/replace/g' filename
+
+sed -e /Tiger/s/dog/mutt/g' animals - substitute 'dog' with 'mutt' where line contains 'Tiger'
+sed -ne /Tiger/s/dog/mutt/gp' animals
+
+note: echo $? - shows exit status of previously running *nix command
+
+sed -ne '/^Tiger/s/dog/mutt/Igp' animals - update lines that begins with 'Tiger' (case insensitivetly)
+
+note: '..../adress/Is....' - for case insensitive ( ../adress/.. part of command)
+for example :
+sed -e '/^Tiger/Is/dog/mutt/gI' animals
+
+
+###focus on right hand side of search and replace functions in sed###
+
+note: sed reserves few characters to help with substitutions on the matched pattern from the left hand side LHS
+
+& - full value of LHS (pattern matched) or the values in the pattern space
+
+ex:
+Intersperce each line with the word 'Animal '
+
+sed -ne 's/.*/&' animals - replace the matched pattern with the matched pattern
+
+sed - ne 's/.*/Animal &/p' animals - intersperce 'animal' on each line 
+
+sed -ne 's/.*[0-9]/&/p' animals - returns animals  with at least 1 numeric in the end
+
+sed -ne 's/.*[0-9]\{1\}$/&/p' animals - returns animals with only 1 numeric at the and of the name
+sed -ne 's/.*[0-9]\{4\}$/&/p' animals - returns animals with only 4 numeric at the and of the name
+sed -ne 's/[a-z][0-9]\{1,4\}$/&/p' animals - returns animals with at least, up to 4 numeric values
+
+###grouping and backreference###
+
+sed -ne 's/\(.*\)\([0-9]\)/&/p' animals - this create two variables: \1 and \2
+sed -ne 's/\(.*\)\([0-9]\)$/\1/p' animals - this create two variables: \1 and \2 but referencies \1
+sed -ne 's/\(.*\)\([0-9]\)$/\2/p' animals - this create two variables: \1 and \2 but referencies \2
+sed -ne 's/\(.*\)\([0-9]\)$/\1 \2/p' animals - this create two variables: \1 and \2 but referencies \1 and \2
+
+next: scripting with sed
+
+
+

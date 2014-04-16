@@ -1,0 +1,37 @@
+#awk&sed basic features#
+
+basic description for both editors
+1 scripting languages 
+2 work with primarily with text files
+3 programmable editors. ability to manupulate text files without text redactors
+    -make routines change in big text files.
+4 command line options and can used in scripts. awk - sed -f script file
+*features
+GNU versions
+use posix grep & egrep (exteneded format of regular expressions)
+ed-sed-awk
+
+sed specific features
+1 non-interactive editor (programmable)
+2 stream editor (sed) - manipulates input streams (STDIN-keyboard, PIPE[ | ], FILE)
+3 loop throught(thru) all lines in files. read entire document
+4 does not(doesn't) operate on the source file by default (not overwrite source file)
+5 supports adresses to indicate which lines to operate on(e.g. /^$/d - delete specific lines)
+    ^$ - reg exp to find blank line
+    /pattern/action - basic skeleton of sed operations
+6 it store current line in pattern space and maintains a whole space for usage (сохраняет строку в patten space и предоставляет ее для дальнейшего использования)
+
+
+awk specific option
+
+1 it's fields processor (whitespace - default delimiter[have any sorts anyway])
+2 use for reporting. extracting specific columns from your data files.
+3 use to perform search and replaces
+4 support programming construct ( loops, conditions (if), arrays, functions)
+5 automaticly tokenizes (разбивает) words in a line for later usage ($1 $2 $3). base on current delimiter
+6 automaticly looks thru all input file(like sed.)
+7 ability to execute shell commands in awk script (perl python php)
+
+
+sed - change lines
+awk - for any kind of reports

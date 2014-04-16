@@ -1,0 +1,816 @@
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=koi8-r">
+<title>Адское программирование.</title>
+</head>
+
+
+<body BGCOLOR="FFFFFF">
+<basefont size=3>
+<blockquote>
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+<!--- header --->
+
+
+
+<h2><a name="s14">14. Контролируемые типы (<i>controlled types</i>)</a></h2>
+
+<p>
+<h3><a name="s14.1">14.1 Общие сведения</a></h3>
+
+
+<p align="JUSTIFY">
+Для того чтобы обеспечить сохранение абстракции,
+при автоматическом распределении и освобождении системных ресурсов,
+Ada95 предусматривает контролируемые типы.
+
+Контролируемыми типами называют типы, производные от типа <tt>Controlled</tt>
+или от лимитированного типа <tt>Limited_Controlled</tt>.
+
+Оба этих типа описаны в стандартном пакете <i>Ada.Finalization</i>:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<B>package</B> Ada.Finalization <B>is</B>
+<B>pragma</B> Preelaborate(Finalization);
+
+    <B>type</B> Controlled <B>is abstract tagged null record</B>;
+
+    <B>procedure</B> Initialize (Object : <B>in out</B> Controlled);
+    <B>procedure</B> Adjust (Object : <B>in out</B> Controlled);
+    <B>procedure</B> Finalize (Object : <B>in out</B> Controlled);
+
+
+    <B>type</B> Limited_Controlled <B>is abstract tagged limited null record</B>;
+
+    <B>procedure</B> Initialize (Object : <B>in out</B> Limited_Controlled);
+    <B>procedure</B> Finalize (Object : <B>in out</B> Limited_Controlled);
+
+
+<B>private</B>
+    . . . -- стандартом не определено
+
+<B>end</B> Ada.Finalization;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Основная идея использования объектов контролируемых и лимитированных контролируемых типов
+заключана в том, что вызов управляющих операций
+<tt>Initialize</tt>, <tt>Adjust</tt> и <tt>Finalize</tt>
+осуществляется автоматически:
+
+<ul>
+<li><tt>Initialize</tt> - "инициализация", вызывается сразу после создания объекта.
+
+<li><tt>Finalize</tt> - "очистка", вызывается непосредственно перед разрушением объекта
+(включая переопределение содержимого объекта).
+
+<li><tt>Adjust</tt> - осуществляет "подгонку" содержимого объекта
+после выполнения присваивания.
+</ul>
+
+
+<p align="JUSTIFY">
+Необходимо заметить, что объекты типа <tt>Controlled</tt> или <tt>Limited_Controlled</tt>
+не возможно использовать непосредственно, поскольку оба типа являются абстрактными.
+
+Вместо этого, для использования контролируемых объектов,
+необходимо описать тип, который будет производным
+от типа <tt>Controlled</tt> или от типа <tt>Limited_Controlled</tt>.
+
+
+<p align="JUSTIFY">
+Примечательным также является то, что предопределенные управляющие операции
+<tt>Initialize</tt>, <tt>Adjust</tt> и <tt>Finalize</tt>
+не являются абстрактными
+(они могут быть нормально унаследованы производным типом),
+однако, реализация этих предопределенных операций не выполняет никаких действий.
+
+Поэтому предполагается, что эти операции будут соответствующим образом переопределены
+для определяемого пользователем контролируемого типа, производного от типа
+<tt>Controlled</tt> или <tt>Limited_Controlled</tt>.
+
+
+<p align="JUSTIFY">
+Чтобы более наглядно продемонстрировать идею использования контролируемых типов,
+рассмотрим следующее:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>declare</b>
+    A:  T;    -- создание объекта A и вызов Initialize(A)
+    B:  T;    -- создание объекта B и вызов Initialize(B)
+<b>begin</b>
+    . . .
+    A := B;   -- вызов Finalize(A), копирование значения B в A и вызов Adjust(A)
+    . . .
+<b>end</b>;   -- вызов Finalize(A) и Finalize(B)
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+В данном случае, предполагается, что тип <tt>T</tt> является производным от типа <tt>Controlled</tt>.
+Отличие использования типов, производных от типа <tt>Limited_Controlled</tt>,
+заключается только в отсутствии операции <tt>Adjust</tt>.
+
+<p align="JUSTIFY">
+При использовании объектов контролируемых типов,
+следует обратить внимание на то, что в случаях когда при описании объекта контролируемого
+типа указывается значение инициализации:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+. . .
+
+C:  T := <i>значение_инициализации</i>;  -- вызов Initialize(C) не выполняется!!!
+
+. . .
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+то автоматический вызов операции <tt>Initialize</tt> выполняться не будет.
+
+
+<p>
+<h3><a name="s14.2">14.2 Управление динамическими объектами</a></h3>
+<!---
+<h3><a name="s14.2">14.2 Проблема "утечки" памяти</a></h3>
+--->
+
+
+<p align="JUSTIFY">
+Одним из широко распространенных случев использования объектов контролируемых типов
+являестя решение проблемы "утечки" памяти при работе с динамическими данными.
+
+<p align="JUSTIFY">
+Предположим, что у нас есть пакет <i>Lists</i> который содержит описание
+связанного списка <tt>List</tt>, и спецификация этого пакета выглядит следующим образом:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>package</b> Lists <b>is</b>
+
+    <b>type</b> List <b>is private</b>;
+
+    Underflow : <b>exception</b>;
+
+    <b>procedure</b> Insert_At_Head(Item : <b>in out</b> List; Value : <b>in</b> Integer);
+    <b>procedure</b> Remove_From_Head(Item : <b>in out</b> List; Value : <b>out</b> Integer);
+
+    <b>procedure</b> Insert_At_Tail(Item : <b>in out</b> List; Value : <b>in</b> Integer);
+    <b>procedure</b> Remove_From_Tail(Item : <b>in out</b> List; Value : <b>out</b> Integer);
+
+    <b>function</b> Full(Item : List) <b>return</b> Boolean;
+    <b>function</b> Empty(Item : List) <b>return</b> Boolean;
+
+<b>private</b>
+    <b>type</b> List <b>is</b> ... -- полное описание типа
+    . . .
+
+<b>end</b> Lists;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Заметим, что тип связанного списка <tt>List</tt>, который описан в этом пакете,
+не является контролируемым типом.
+
+Теперь, рассмотрим следующий пример, использующий описание пакета <i>Lists</i>:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b> Lists;        <b>use</b> Lists;
+
+<b>procedure</b> Memory_Leaks_Demo <b>is</b>
+
+    A, B   : List;
+    Result : Integer;
+
+    <b>procedure</b> Loose_Memory <b>is</b>
+        C : List;
+    <b>begin</b>
+        Insert_At_Head(C, 1);
+        Insert_At_Head(C, 2);
+    <b>end</b> Loose_Memory; -- при попадании в эту точку, 
+                      -- <i>C</i> выходит за пределы области видимости
+                      -- и теряется память ассоциируемая с этим узлом
+
+<b>begin</b>
+    Insert_At_Head(A, 1);
+    Insert_At_Head(A, 2);
+
+    Insert_At_Head(B, 3);
+    Insert_At_Head(B, 4);
+
+    B := A;
+    -- <i>B</i> и <i>A</i> указывают на один и тот же список
+    -- все узлы "старого" списка <i>B</i> - теряются
+
+    Remove_From_Tail(A, Result);
+    -- изменяет как список <i>A</i>, так и список <i>B</i>
+
+<b>end</b> Memory_Leaks_Demo;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+В данном примере наглядно демонстрируются проблемы "утечки" памяти при работе
+с объектами связанного списка <tt>List</tt>:
+<ul>
+<li>
+когда объект связанного списка выходит за пределы области видимости,
+пространство динамической памяти, выделенное для размещения этого объекта,
+не восстанавливается
+<li>
+в случае выполнения присваивания,
+осуществляется копирование только указателя на "голову" списка (начало списка),
+а копирование остальной части списка не выполняется
+</ul>
+
+
+
+<p align="JUSTIFY">
+Рассмотрим вариант модификации пакета <i>Lists</i>
+в котором тип связанного списка <tt>List</tt> является контролируемым.
+Спецификация пакета будет иметь следующий вид:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b> Ada.Finalization;
+
+<b>package</b> Lists <b>is</b>
+
+    <b>type</b> List <b>is private</b>;
+
+    Underflow : <b>exception</b>;
+
+    <b>procedure</b> Insert_At_Head(Item : <b>in out</b> List; Value : <b>in</b> Integer);
+    <b>procedure</b> Remove_From_Head(Item : <b>in out</b> List; Value : <b>out</b> Integer);
+
+    <b>procedure</b> Insert_At_Tail(Item : <b>in out</b> List; Value : <b>in</b> Integer);
+    <b>procedure</b> Remove_From_Tail(Item : <b>in out</b> List; Value : <b>out</b> Integer);
+
+    <b>function</b> Full(Item :List) <b>return</b> Boolean;
+    <b>function</b> Empty(Item:List) <b>return</b> Boolean;
+
+<b>private</b>
+
+    -- обычные описания для списка
+
+    <b>type</b> Node;
+    <b>type</b> Ptr <b>is access</b> Node;
+
+    <b>type</b> Node <b>is</b>
+        <b>record</b>
+            Value : Integer;
+            Next  : Ptr;
+        <b>end record</b>;
+
+
+    -- только "голова" списка - "специальная"
+
+    <b>type</b> List <b>is new </b>Ada.Finalization.Controlled <b>with</b>
+        <b>record</b>
+            Head : Ptr;
+        <b>end record</b>;
+
+
+    -- <i>Initialize</i> не нужна (указатели автоматически устанавливаются в <i>null</i>)
+
+    -- procedure Initialize(Item : in out List);
+    <b>procedure</b> Adjust(Item : <b>in out</b> List);
+    <b>procedure</b> Finalize(Item : <b>in out</b> List);
+
+<b>end</b> Lists;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Примечательным фактом является описание подпрограмм <tt>Adjust</tt> и <tt>Finalize</tt>
+в приватной части спецификации пакета.
+
+Это предотвращает от непосредственной возможности их неуместного вызова клиентами.
+
+Тело пакета <i>Lists</i> (с подробными комментариями) будет иметь вид:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b> Unchecked_Deallocation;
+
+<b>package body</b> Lists <b>is</b>
+
+    -- подпрограмма освобождения памяти занимаемой узлом
+    <b>procedure</b> Free <b>is new</b> Unchecked_Deallocation(Node, Ptr);
+
+    ------------------------------------------------------------
+    -- реализация остальных внутренностей (Insert_At_Head, Remove_From_Head...)
+
+        . . .
+
+    --------------------------------------------------------------
+    -- дан указатель на список, подпрограмма будет размещать
+    -- в памяти новый, идентичный первому, список
+    <b>function</b> Copy_List(Item : Ptr) <b>return</b> Ptr <b>is</b>
+    <b>begin</b>
+        <b>if</b> Item = <b>null then</b>
+            <b>return null</b>;
+        <b>else
+            return new </b>Node'(Item.Value, Copy_List(Item.Next));
+        <b>end if</b>;
+    <b>end</b> Copy_List;
+
+    ------------------------------------------------------------
+    -- при присваивании B := A, <i>B</i> будет только переписано содержимым <i>A</i>.
+    -- для связанного списка это подразумевает, что оба, <i>A</i> и <i>B</i>,
+    -- указывают на один и тот же объект.
+    -- теперь, необходимо сделать физическую копию узлов, на которые указывает <i>B</i>,
+    -- и переставить указатель начала списка на начало копии списка, который мы
+    -- только что сделали
+    <b>procedure</b> Adjust(Item : <b>in out</b> List) <b>is</b>
+    <b>begin</b>
+            Item.Head := Copy_List(Item.Head);
+    <b>end</b> Adjust;
+
+    ------------------------------------------------------------
+    -- освободить всю память, занимаемую узлами списка,
+    -- при разрушении списка
+    <b>procedure</b> Finalize(Item : <b>in out</b> List) <b>is</b>
+        Upto : Ptr := Item.Head;
+        Temp : Ptr;
+    <b>begin
+        while</b> Upto /= <b>null loop</b>
+            Temp := Upto;
+            Upto := Upto.Next;
+            Free(Temp);
+        <b>end loop</b>;
+
+        Item.Head := <b>null</b>;
+    <b>end</b> Finalize;
+
+<b>end</b> Lists;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Ниже представлен пример программы которая использует модифицированную версию пакета <i>Lists</i>
+(где тип <tt>List</tt> является контролируемым).
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b> Lists;        <b>use</b> Lists;
+
+<b>procedure</b> Controlled_Demo <b>is</b>
+
+    A : List;                -- автоматический вызов <i>Initialize(A);</i>
+    B : List;                -- автоматический вызов <i>Initialize(B);</i>
+
+<b>begin</b>
+    Insert_At_Head(A, 1);
+    Insert_At_Head(A, 2);
+
+    Insert_At_Head(B, 3);
+    Insert_At_Head(B, 4);
+        ------------------------------------------
+        --
+        --    A --&gt; | 2 |--&gt;| 1 |--&gt; null
+        --    B --&gt; | 4 |--&gt;| 3 |--&gt; null
+        --
+        ------------------------------------------
+
+    B := A;
+        ------------------------------------------
+        --
+        --    Finalize(B);
+        --    освобождение узлов <i>B</i>, до перезаписи
+        --
+        --    A --&gt; | 2 |--&gt;| 1 |--&gt; null
+        --    B --&gt; null                                
+        --
+        --    копирование <i>A</i> в <i>B</i>
+        --    теперь они _оба_ указывают на один и тот же список
+        --
+        --    A --&gt; | 2 |--&gt;| 1 |--&gt; null
+        --    B ----^                                
+        --
+        --    Adjust(B);
+        --    <i>B</i> копирует список, на который он в текущий момент
+        --    указывает, и после этого указывает на новый список
+        --
+        --    A --&gt; | 2 |--&gt;| 1 |--&gt; null
+        --    B --&gt; | 2 |--&gt;| 1 |--&gt; null
+        --
+        ------------------------------------------
+
+<b>end</b> Controlled_Demo;
+        ------------------------------------------
+        --
+        --    Finalize(A), Finalize(B).
+        --    освобождение памяти ассоциируемой с <i>A</i> и <i>B</i>
+        --
+        --    A --&gt; null
+        --    B --&gt; null
+        --
+        ------------------------------------------
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Таким образом, использование контролируемых типов предоставляет удобное
+средство управления жизненным циклом динамических объектов,
+которое позволяет избавить клиентов типа от необходимости непосредственного
+управления динамическим распределением памяти.
+
+
+
+<p>
+<h3><a name="s14.3">14.3 Счетчик использования</a></h3>
+<!---
+<h3><a name="s14.3">14.3 Счетчик ссылок</a></h3>
+--->
+
+
+<p align="JUSTIFY">
+Бывают случаи, когда при обработке множества объектов какого-либо типа данных
+необходимо использование определенного ресурса системы.
+
+Примером подобной ситуации может служить
+необходимость протоколирования состояния различных объектов
+одного и того же типа в определенном файле,
+который специально для этого предназначен.
+
+<p align="JUSTIFY">
+Для большей ясности, представим себе случай, когда
+тип данных описывает пользователя, получающего доступ к базе данных.
+
+Объектов-пользователей базы данных может быть множество.
+
+При этом, необходимо протоколировать действия каждого пользователя,
+осуществляемые при работе с базой данных, в едином файле протокола.
+
+
+<p align="JUSTIFY">
+Подобная ситуация подразумевает, что
+при создании хотя бы одного объекта указанного типа данных,
+файл протокола состояний должен быть открыт.
+
+Далее, при последующем создании объектов этого типа,
+открытие новых файлов для протоколирования состояний
+не выполняется.
+
+При удалении не используемых объектов,
+файл протокола должен быть закрыт только тогда,
+когда удалены все объекты указанного типа данных.
+
+Таким образом, нам необходимо осуществлять подсчет количества существующих объектов
+определенного типа данных, которые совместно используют ресурс системы.
+
+
+<p align="JUSTIFY">
+Для решения таких задач удобно использовать контролируемые типы.
+
+Рассмотрим следующий пример спецификации пакета:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Ada.Text_IO;
+<b>with</b>  Ada.Finalization;     <b>use</b>   Ada.Finalization;
+
+<b>package</b> Log <b>is</b>
+
+    <b>type</b> Item   <b>is private</b>;
+    
+    <b>procedure</b> Put_To_Log (Self: <b>in out</b> Item; S: <b>in</b> String);
+
+<b>private</b>
+
+    <b>type</b> Item   <b>is new</b>  Limited_Controlled <b>with</b>
+        <b>record</b>
+
+            . . .   -- описание полей расширения
+
+        <b>end record</b>;
+
+    <b>procedure</b> Initialize (Self: <b>in out</b> Item);
+    <b>procedure</b> Finalize (Self: <b>in out</b> Item);
+
+    The_Log_File: Ada.Text_IO.File_Type;
+    The_Counter:  Natural := 0;
+
+<b>end</b> Log;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Здесь тип <tt>Item</tt> описывает тип объектов при обработке которых
+используется общий файл протокола <tt>The_Log_File</tt>.
+
+Для вывода информации о состоянии объекта типа <tt>Item</tt> в файл протокола <tt>The_Log_File</tt>
+используется процедура <tt>Put_To_Log</tt>.
+
+Для подсчета количества существующих в текущий момент объектов типа <tt>Item</tt>
+используется переменная <tt>The_Counter</tt>.
+
+
+<p align="JUSTIFY">
+Тело данного пакета может быть описано следующим образом:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>package body</b> Log <b>is</b>
+
+    <b>procedure</b> Initialize (Self: <b>in out</b> Item) <b>is</b>
+    <b>begin</b>
+        The_Counter := The_Counter + 1;
+
+        <b>if</b>  The_Counter = 1   <b>then</b>
+            Ada.Text_IO.Open (File =&gt; The_Log_File,
+                              Mode =&gt; Ada.Text_IO.Append_File,
+                              Name =&gt; "log.txt");
+        <b>end if</b>;
+    <b>end</b> Initialize;
+
+    <b>procedure</b> Finalize (Self: <b>in out</b> Item) <b>is</b>
+    <b>begin</b>
+        <b>if</b>  The_Counter = 1   <b>then</b>
+            Ada.Text_IO.Close (The_Log_File);
+        <b>end if</b>;
+
+        The_Counter := The_Counter - 1;
+    <b>end</b> Finalize;
+
+    <b>procedure</b> Put_To_Log (Self: <b>in out</b> Item; S: <b>in</b> String) <b>is</b>
+    <b>begin</b>
+
+        . . .   -- вывод необходимых данных в файл The_Log_File
+
+    <b>end</b> Put_To_Log;
+
+<b>end</b> Log;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Как видно из примера, открытие файла протокола <tt>The_Log_File</tt>,
+при создании первого объекта типа <tt>Item</tt>,
+и инкремент количества существующих в текущий момент объектов типа <tt>Item</tt>
+в переменной <tt>The_Counter</tt>
+выполняется автоматически вызываемой процедурой <tt>Initialize</tt>.
+
+Декремент количества существующих в текущий момент объектов типа <tt>Item</tt>
+в переменной <tt>The_Counter</tt> и
+закрытие  файла протокола <tt>The_Log_File</tt>
+выполняется автоматически вызываемой процедурой <tt>Finalize</tt>.
+
+
+
+<p align="JUSTIFY">
+Следует заметить, что при рассмотрении данного примера мы не заостряли внимание на
+структуре типа <tt>Item</tt> и реализации процедуры <tt>Put_To_Log</tt>, которая
+выводит информацию о состоянии объекта в файл протокола, поскольку в данном случае
+это не имеет принципиального значения.
+
+
+<p align="JUSTIFY">
+
+
+
+<p>
+<h3><a name="s14.4">14.4 Блокировка ресурса</a></h3>
+
+
+<p align="JUSTIFY">
+Каноническим примером использования инициализации (<tt>Initialize</tt>) и очистки (<tt>Finalize</tt>)
+совместно со ссылочным дискриминантом может служить следующий пример организации
+монопольного доступа к общему ресурсу:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>type</b>  Handle(Resource: <b>access</b> Some_Thing) <b>is</b>
+        <b>new</b> Finalization.Limited_Controlled <b>with null record</b>;
+
+<b>procedure</b> Initialize (H: <b>in out</b> Handle) <b>is</b>
+<b>begin</b>
+    Lock(H.Resource);
+<b>end</b> Initialize;
+
+<b>procedure</b> Finalize (H: <b>in out</b> Handle) <b>is</b>
+<b>begin</b>
+    Unlock(H.Resource);
+<b>end</b> Finalize;
+
+    . . .
+
+<b>procedure</b> P (T: <b>access</b> Some_Thing) <b>is</b>
+    H:  Handle(T);
+<b>begin</b>
+    . . . -- монопольная обработка T
+<b>end</b> P;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+В данном случае, суть идеи заключается в том, что описание <tt>H</tt> внутри процедуры <tt>P</tt>
+приводит к автоматическому вызову операции <tt>Initialize</tt> которая, в свою очередь,
+вызывает операцию блокировки ресурса <tt>Lock</tt>,
+после чего, внутри процедуры <tt>P</tt>, ресурс используется монопольно.
+
+Операция очистки <tt>Finalize</tt>,
+которая вызывает операцию освобождения ресурса <tt>Unlock</tt>,
+будет гарантированно вызвана, вне зависимости от того
+как произошло завершение работы процедуры <tt>P</tt>
+(нормальным образом, в результате исключения или в результате абортирования обработки).
+
+Подобный прием удобен для гарантированной организации работы парных операций,
+подобных операциям открытия и закрытия файлов.
+
+
+
+<p>
+<h3><a name="s14.5">14.5 Отладка контролируемых типов<br>
+                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                         Некоторые рекомендации</a></h3>
+
+
+<p align="JUSTIFY">
+Сложность отладки и проверки контролируемых типов заключается в том, что процедуры
+<tt>Initialize</tt>, <tt>Finalize</tt> и <tt>Adjust</tt>
+вызываются автоматически, без какого-либо явного указания в программе.
+
+В таком случае, можно поместить в тела соответствующих процедур
+<tt>Initialize</tt>, <tt>Finalize</tt> и <tt>Adjust</tt>
+инструкции которые отображают диагностические сообщения,
+например, следующим образом:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>procedure</b> Initialize (Self: <b>in out</b> Controlled_Type) <b>is</b>
+<b>begin</b>
+    . . .   -- код инициализации
+
+    Ada.Text_IO.Put_Line("Initialize called for Controlled_Type");
+<b>end</b> Initialize;
+
+<b>procedure</b> Finalize (Self: <b>in out</b> Controlled_Type) <b>is</b>
+<b>begin</b>
+    . . .   -- код очистки
+
+    Ada.Text_IO.Put_Line("Finalize called for Controlled_Type");
+<b>end</b> Finalize;
+
+<b>procedure</b> Adjust (Self: <b>in out</b> Controlled_Type) <b>is</b>
+<b>begin</b>
+    . . .   -- код подгонки
+
+    Ada.Text_IO.Put_Line("Adjust called for Controlled_Type");
+<b>end</b> Adjust;
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+Не смотря на простоту данного подхода, он является достаточно эффективным способом проверки
+корректности выполняемых действий.
+
+
+<p align="JUSTIFY">
+Перечислим также некоторые рекомендации которые помогут избежать некоторых ошибок
+при написании процедур <tt>Initialize</tt>, <tt>Finalize</tt> и <tt>Adjust</tt>:
+
+<ul>
+<li><p align="JUSTIFY">
+Первой инструкцией подпрограмм <tt>Finalize</tt> и <tt>Adjust</tt> должна быть проверка
+<tt><b>if</b></tt>, которая проверяет, что объект не <tt><b>nil</b></tt>.
+Следует остерегаться любого декларативного кода, который может быть выполнен до проверки на
+<tt><b>nil</b></tt>.
+<p align="JUSTIFY">
+
+<li><p align="JUSTIFY">
+Подпрограммы <tt>Finalize</tt> и <tt>Adjust</tt> должны быть симметричны и инверсны
+по отношению друг к другу.
+<p align="JUSTIFY">
+
+<li><p align="JUSTIFY">
+Если контролируемый тип является производным от контролируемого родителя,
+то процедура <tt>Initialize</tt> производного типа всегда должна вызывать 
+реализацию <tt>Initialize</tt> родителя перед выполнением инициализации
+необходимой для части расширения.
+<p align="JUSTIFY">
+
+<li><p align="JUSTIFY">
+Если контролируемый тип является производным от контролируемого родителя,
+то <tt>Finalize</tt> и <tt>Adjust</tt> производного типа должны всегда вызывать 
+реализацию <tt>Finalize</tt> и <tt>Adjust</tt> родителя после выполнения
+действий, необходимых для части расширения.
+<p align="JUSTIFY">
+
+<li><p align="JUSTIFY">
+При тестировании подпрограммы <tt>Finalize</tt>, необходимо проверить,
+что значение объекта после очистки действительно будет <tt><b>nil</b></tt>.
+<p align="JUSTIFY">
+
+<li><p align="JUSTIFY">
+Для агрегата или вызова функции, реализация конкретного компилятора
+может создавать, а может и не создавать отдельный анонимный объект.
+Следовательно, подпрограммы <tt>Finalize</tt> и <tt>Adjust</tt>
+должны поддерживать создание временных анонимных объектов
+(следует остерегаться любых ограничений на число существующих объектов).
+<p align="JUSTIFY">
+
+<li><p align="JUSTIFY">
+Следует помнить, что при программировании контролируемых типов,
+любое присваивание, описание константы или динамическое размещение
+которое использует инициализационный агрегат,
+в результате, может привести к вызову <tt>Finalize</tt> и/или <tt>Adjust</tt>.
+
+В частности, не следует выполнять подобных операций при реализации
+процедур <tt>Finalize</tt> и <tt>Adjust</tt>
+(это может привести к бесконечно рекурсивным вызовам).
+<p align="JUSTIFY">
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+<!--- footer --->
+
+
+
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+
+</blockquote>
+</body>
+</html>
+

@@ -1,0 +1,60 @@
+###awk intro####  
+
+awk is field reporting processor
+
+Features:
+1.reporter
+2.field processor
+3.supports scripting
+4.programming constructs
+5.default delimeter is whitespace (space) (you can parse .log files etc)
+6.pipe, file, stdin as sources of input
+7.automatically tokenizes colums\fields into the variables $1 $2 $3 $4 
+8.supports grep and egrep regexes
+Usage:
+
+awk '{instructions}' file(s)
+
+awk '/pattern/ {procedure}' file
+awk -f script_file(s)
+
+# print entire row , one at a time, from an input file
+note: $0 represents the current record or row
+  awk '{ print $0 }' animals
+
+#print specific columns from animals
+  awk '{ print $1 }' animals - prints 1 line from the file
+
+# print multiple columns from animals file
+  awk '{ print $1; print $2; }' animals
+  awk '{ print $1,$2}' animals
+
+#print columns from lines containing 'deer' with using regexes
+  awk ' /deer/{print $0}' animals
+    equiualent - #greep deer animals
+#print print collumns from lines containing digits (works with only one digit in a row)
+  awk '/[0-9]/{print $0}' animals
+  awk '/^[0-9]*$/{print $0}' animals (regex /^$/)
+#remove blank lines
+  sed -e /^$/d animals | awk '/^[0-9]*$/ { print $0}' - this will print lines with only digits (excluding blank lines)
+ 
+#prints only blank lines 
+  awk '/^$/ { print $0 }' animals
+    or
+  awk '/^$/ { print }' animals
+
+#### delimiters ######
+default delimiter - space or tabs (whitespaces)
+use  -F to influence the default delimiter
+
+parse /etc/password file
+-- prints users shells
+  awk -F: ' { print $7} ' /etc/passwd
+support the character classes in parsing the default delimiter
+  awk -F "[:;,\t]"
+
+
+
+
+
+

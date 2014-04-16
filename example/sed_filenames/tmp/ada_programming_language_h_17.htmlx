@@ -1,0 +1,436 @@
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=koi8-r">
+<title>Адское программирование.</title>
+</head>
+
+
+<body BGCOLOR="FFFFFF">
+<basefont size=3>
+<blockquote>
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+<!--- header --->
+
+
+
+<h2><a name="s17">17. Низкоуровневые средства для системного программирования</a></h2>
+
+
+<p align="JUSTIFY">
+Кроме богатого набора традиционных средств абстракции данных,
+Ада, в отличие от многих современных языков программирования,
+предоставляет ряд низкоуровневых средств,
+которые могут быть удобны при организации взаимодействия
+с используемым оборудованием или внешним программным обеспечением.
+
+Например, с помощью таких средств можно управлять требуемым двоичным представлением данных
+или размещением объектов в фиксированных адресах физической памяти.
+
+
+<p align="JUSTIFY">
+Описанию средств системного программирования Ады посвящено приложение <i>C</i>
+(<i>Annex C</i>) стандарта Ada95.
+
+Кроме того, различные реализации компиляторов могут предусматривать
+дополнительные атрибуты типов и/или директивы компилятора
+которые управляют внутренним представлением объектов
+и поведением окружения времени выполнения.
+
+
+<p align="JUSTIFY">
+Следует заметить, что многие зависящие от реализации системы константы располагаются
+в стандартном пакете <i>System</i>.
+
+Например, число битов в элементе памяти, число доступных элементов памяти,
+наибольшее и наименьшее доступное целое число, имя операционной системы
+и т.д.
+
+
+
+<p>
+<h3><a name="s17.1">17.1 Спецификация внутреннего представления данных</a></h3>
+
+
+<p align="JUSTIFY">
+С помощью спецификации представления,
+для идентификаторов любого перечислимого типа можно указать специфические значения
+для внутреннего представления значений перечислимого типа.
+
+Предположим, что у нас есть перечислимый тип, который описывает страны:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>type</b>  Country <b>is</b> (USA, Russia, France, UK, Australia);
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Мы можем, используя спецификацию представления,
+указать для каждого идентификатора этого перечислимого типа
+значение телефонного кода соответствующей страны
+следующим образом:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>type</b>  Country <b>is</b> (USA, Russia, France, UK, Australia);
+<b>for</b> Country <b>use</b> (USA =&gt; 1, Russia =&gt; 7, France =&gt; 33, UK =&gt; 44, Australia =&gt; 61);
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Таким образом, внутреннее значение используемое, например, для представления идентификатора
+<tt>France</tt> будет 33.
+
+
+<p align="JUSTIFY">
+При спецификации внутреннего представления перечислимого типа,
+значения для внутреннего представления
+должны указываться в порядке увеличения значений и быть уникальны.
+
+Следует также обратить внимание на то, что
+атрибуты перечислимого типа будут возвращать значения
+которые не учитывают спецификацию внутреннего представления, например:
+
+
+<p>
+<dir><table border=0>
+<tr>
+<td valign="TOP"><font size=1><tt>Country<b>'<i>Succ</i></b>(USA)</tt></td>
+<td valign="TOP"><font size=1>&nbsp;</td>
+<td valign="TOP"><font size=1>возвратит: <tt>Russia</tt></td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Country<b>'<i>Pred</i></b>(Australia)</tt></td>
+<td valign="TOP"><font size=1>&nbsp;</td>
+<td valign="TOP"><font size=1>возвратит: <tt>UK</tt></td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Country<b>'<i>Pos</i></b>(Russia)</tt></td>
+<td valign="TOP"><font size=1>&nbsp;</td>
+<td valign="TOP"><font size=1>возвратит: <tt>1</tt></td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Country<b>'<i>Val</i></b>(2)</tt></td>
+<td valign="TOP"><font size=1>&nbsp;</td>
+<td valign="TOP"><font size=1>возвратит: <tt>France</tt></td>
+</tr>
+
+</table></dir>
+
+
+<p align="JUSTIFY">
+Для того, чтобы получить доступ к значениям внутреннего представления
+перечислимого типа необходимо воспользоваться стандартным настраиваемым модулем
+<i>Ada.Unchecked_Convertion</i>, который позволяет получить внутреннее представление
+объекта как значение другого типа, не выполняя при этом никаких промежуточных преобразований.
+
+
+<p align="JUSTIFY">
+Следует заметить, что использование модуля настраиваемой функции <i>Ada.Unchecked_Convertion</i>
+обладает одним ограничением:
+объект-источник и объект-приемник должны иметь одинаковый битовый размер.
+
+Поэтому, чтобы гарантировать соответствие размеров объектов источника и приемника,
+необходимо указать компилятору размер внутреннего представления перечислимого типа
+<tt>Country</tt>.
+
+Например, можно указать, что размер внутреннего представления типа <tt>Country</tt>
+должен быть равен размеру типа <tt>Integer</tt>.
+
+Это можно выполнить следующим образом:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>type</b>  Country <b>is</b> (USA, Russia, France, UK, Australia);
+<b>for</b> Country<b>'<i>Size</i></b> <b>use</b> Integer<b>'<i>Size</i></b>;
+<b>for</b> Country <b>use</b> (USA =&gt; 1, Russia =&gt; 7, France =&gt; 33, UK =&gt; 44, Australia =&gt; 61);
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Напомним, что атрибут <tt>T<b>'<i>Size</i></b></tt>
+возвращает размер экземпляра объекта типа <tt>T</tt> в битах.
+
+
+<p align="JUSTIFY">
+Следующий пример простой программы, которая выводит телефонный код Франции,
+демонстрирует использование рассмотренных средств спецификации внутреннего представления:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Ada.Unchecked_Conversion;
+<b>with</b>  Ada.Text_IO;              <b>use</b>   Ada.Text_IO;
+
+<b>procedure</b> Main  <b>is</b>
+
+    <b>type</b>  Country <b>is</b> (USA, Russia, France, UK, Australia);
+    <b>for</b> Country<b>'<i>Size</i></b> <b>use</b> Integer<b>'<i>Size</i></b>;
+    <b>for</b> Country <b>use</b> (USA       =&gt; 1,
+                                   Russia    =&gt; 7,
+                                   France    =&gt; 33,
+                                   UK        =&gt; 44,
+                                   Australia =&gt; 61);
+
+    <b>function</b> International_Dialing_Code <b>is</b>
+            <b>new</b> Ada.Unchecked_Conversion (Country, Integer);
+
+<b>begin</b>
+    Put ("International Dialing Code for France is ");
+    Put ( Integer<b>'<i>Image</i></b>(International_Dialing_Code (France)) );
+    New_Line;
+<b>end</b> Main;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+<!---
+--->
+
+
+
+
+<p>
+<h3><a name="s17.2">17.2 Привязка объекта к фиксированному адресу памяти</a></h3>
+
+
+<p align="JUSTIFY">
+В некоторых случаях может потребоваться выполнение чтения или записи
+по фиксированному абсолютному адресу памяти.
+
+Простым примером подобной ситуации может быть то, что
+операционная система MS-DOS хранит значение времени в фиксированных адресах памяти
+46E и 46C (шестнадцатеричные значения).
+
+Более точная спецификация этих значений следующая:
+
+
+<p>
+<dir><table border=0>
+<tr>
+<td valign="TOP"><font size=1><tt>046E - 046F</tt></td>
+<td valign="TOP"><font size=1>&nbsp;-&nbsp;</td>
+<td valign="TOP"><font size=1>время дня в часах</td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>046C - 046D</tt></td>
+<td valign="TOP"><font size=1>&nbsp;-&nbsp;</td>
+<td valign="TOP"><font size=1>
+число отсчетов таймера с начала текущего часа<br>
+(один отсчет таймера равен 5/91 секунды)
+</td>
+</tr>
+</table></dir>
+
+
+<p align="JUSTIFY">
+Таким образом, для получения текущего времени необходимо осуществить привязку
+объекта к фиксированному адресу памяти.
+
+Для осуществления этого, можно привязать переменную <tt>Time_Hight</tt> типа <tt>Integer</tt>
+к фиксированному адресу <tt>16#046E#</tt> следующим образом:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+Time_Hight_Address  : <b>constant</b>  Address := To_Address (16#046E#);
+
+<b>type</b>  Time  <b>is range</b> 0 .. 65365;
+<b>for</b> Time<b>'<i>Size</i></b> <b>use</b> 16;
+
+Time_Hight  : Time;
+<b>for</b> Time_Hight<b>'<i>Address</i></b> <b>use</b> Time_Hight_Address;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Следует заметить, что здесь, тип <tt>Time</tt> является беззнаковым 16-битным целым.
+Величина адреса <tt>16#046E#</tt> должна иметь тип <tt>Address</tt>,
+который описывается в пакете <i>System</i>.
+Стандартная функция <tt>To_Address</tt>,
+которая выполняет преобразование целочисленного значения в значение адреса,
+описывается в пакете <i>System.Storage_Elements</i>.
+
+
+
+
+
+<p>
+<h3><a name="s17.3">17.3 Организация доступа к индивидуальным битам</a></h3>
+
+
+<p align="JUSTIFY">
+Организацию доступа к индивидуальным битам можно рассмотреть на примере
+операционной системы MS-DOS, в которой фиксированный адрес памяти
+<tt>16#0417#</tt> содержит состояние установок клавиатуры.
+
+Вид физического представления этого байта следующий:
+
+
+<p>
+<center><table border=1>
+<tr>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>7</tt></td>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>6</tt></td>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>5</tt></td>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>4</tt></td>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>3</tt></td>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>2</tt></td>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>1</tt></td>
+<td valign="TOP" align="CENTER" width=50><font size=1><tt>0</tt></td>
+</tr>
+
+<tr>
+<td valign="TOP" align="CENTER"><font size=1>Insert</td>
+<td valign="TOP" align="CENTER"><font size=1>Caps<br>Lock</td>
+<td valign="TOP" align="CENTER"><font size=1>Num<br>Lock</td>
+<td valign="TOP" align="CENTER"><font size=1>Scroll<br>Lock</td>
+
+<td valign="TOP" align="CENTER"><font size=1>&nbsp;</td>
+<td valign="TOP" align="CENTER"><font size=1>&nbsp;</td>
+<td valign="TOP" align="CENTER"><font size=1>&nbsp;</td>
+<td valign="TOP" align="CENTER"><font size=1>&nbsp;</td>
+</tr>
+</table></center>
+
+
+<p align="JUSTIFY">
+Пример следующей простой программы демонстрирует организацию доступа
+к индивидуальным битам, характеризующим состояние клавиатуры:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>with</b>  Ada.Text_IO;              <b>use</b>   Ada.Text_IO;
+<b>with</b>  System.Storage_Elements;  <b>use</b>   System.Storage_Elements;
+
+<b>procedure</b> Keyboard_Status_Demo <b>is</b>
+
+    Keyboard_Address  : <b>constant</b> Address := To_Address (16#0417#);
+
+    <b>type</b>  Status  <b>is</b>  (Not_Active, Active);
+    <b>for</b>   Status  <b>use</b> (Not_Active =&gt; 0, Active =&gt; 1);
+    <b>for</b>   Status<b>'<i>Size</i></b>  <b>use</b> 1;
+
+    <b>type</b>  Keyboard_Status <b>is</b>
+        <b>record</b>
+            Scroll_Lock : Status;   -- состояние Scroll Lock
+            Num_Lock    : Status;   -- состояние Num Lock
+            Caps_Lock   : Status;   -- состояние Caps Lock
+            Insert      : Status;   -- состояние Insert
+        <b>end record</b>;
+    <b>for</b> Keyboard_Status <b>use</b>
+        <b>record</b>
+            Scroll_Lock <b>at</b> 0 <b>range</b> 4..4;  -- бит 4
+            Num_Lock    <b>at</b> 0 <b>range</b> 5..5;  -- бит 5
+            Caps_Lock   <b>at</b> 0 <b>range</b> 6..6;  -- бит 6
+            Insert      <b>at</b> 0 <b>range</b> 7..7;  -- бит 7
+        <b>end record</b>;
+
+    Keyboard_Status_Byte  : Keyboard_Status;
+    <b>for</b> Keyboard_Status_Byte<b>'<i>Address</i></b> <b>use</b> Keyboard_Address;
+
+<b>begin</b>
+
+    <b>if</b>  Keyboard_Status_Byte.Insert = Active  <b>then</b>
+        Put_Line("Insert mode ON");
+    <b>else</b>
+        Put_Line("Insert mode OFF");
+    <b>end if</b>;
+
+    <b>if</b>  Keyboard_Status_Byte.Caps_Lock = Active  <b>then</b>
+        Put_Line("Caps Lock mode ON");
+    <b>else</b>
+        Put_Line("Caps Lock mode OFF");
+    <b>end if</b>;
+
+    <b>if</b>  Keyboard_Status_Byte.Num_Lock = Active  <b>then</b>
+        Put_Line("Num Lock mode ON");
+    <b>else</b>
+        Put_Line("Num Lock mode OFF");
+    <b>end if</b>;
+
+    <b>if</b>  Keyboard_Status_Byte.Scroll_Lock = Active  <b>then</b>
+        Put_Line("Scroll Lock mode ON");
+    <b>else</b>
+        Put_Line("Scroll Lock mode OFF");
+    <b>end if</b>;
+
+<b>end</b> Keyboard_Status_Demo;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+В данном примере, тип <tt>Status</tt> описан так, чтобы значения этого типа
+занимали ровно один бит.
+
+Далее, с используя тип <tt>Status</tt>, описывается тип записи <tt>Keyboard_Status</tt>,
+внутреннее представление которой соответствует физической структуре байта состояния клавиатуры.
+
+<p align="JUSTIFY">
+Следует заметить, что спецификатор "<tt>Scroll_Lock <b>at</b> 0 <b>range</b> 4 .. 4</tt>"
+указывает, что объект <tt>Scroll_Lock</tt> должен быть размещен
+по нулевому смещению в четвертой битовой позиции записи <tt>Keyboard_Status</tt>
+(отсчет ведется в битах от начала записи).
+
+
+
+
+
+
+
+
+<!--- footer --->
+
+
+
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+
+</blockquote>
+</body>
+</html>
+

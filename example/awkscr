@@ -1,0 +1,26 @@
+#this script parses document for items containing deer
+
+
+BEGIN { FS = " "; age[0] = 50; fullname = "Vladimir" "Chernyakov"; print "begin processing of various records"}
+
+#FS - system variable
+#FS - for delimiter which uses
+####main loop
+
+#OFS = "_"
+#$7 ~ /bash/ {print NR,$1,$2,NF}
+#{print NR, $1, $2, NF}
+#{print age[0]}
+#{ ++age } # it increments age variable
+
+#NR > 10 { print "current record number is grater then 10 " NR }
+#NF >= 2 &&  NR >= 10 { print  }
+
+{for (i=1; i<=10; i++) print $i}
+
+
+
+###end of all
+
+
+END {print "complete processing"; print NR; print "filename:" FILENAME; print "total command line arguments:"ARGC; print "My name is:" fullname }

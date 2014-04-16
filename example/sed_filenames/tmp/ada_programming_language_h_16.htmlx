@@ -1,0 +1,698 @@
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=koi8-r">
+<title>Адское программирование.</title>
+</head>
+
+
+<body BGCOLOR="FFFFFF">
+<basefont size=3>
+<blockquote>
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+<!--- header --->
+
+
+
+<h2><a name="s16">16. Интерфейс с другими языками</a></h2>
+
+
+<p align="JUSTIFY">
+Обычно, не зависимо от того насколько хорош язык программирования,
+необходимо учитывать, что он должен сосуществовать с программным обеспечением
+которое написано с помощью других языков программирования.
+
+Разработчики Ады предусмотрели это и предлагают стандартные механизмы
+для осуществления связи с программами которые написаны на других языках.
+
+
+<p align="JUSTIFY">
+При этом следует заметить, что различные компиляторы Ады могут расширять
+стандартные средства взаимодействия с другими языками программирования
+добавляя какие-либо дополнительные возможности,
+специфичные для конкретного компилятора.
+
+Поэтому, для получения более точных сведений, необходимо обратиться к справочному руководству
+используемого компилятора Ады.
+
+
+
+
+<p>
+<h3><a name="s16.1">16.1 Связь с другими языками в Ada83</a></h3>
+
+
+<p align="JUSTIFY">
+Стандартным средством взаимодействия с другими языками в Ada83
+является директива компилятора <tt>Interface</tt>,
+которая позволяет вызывать подпрограммы написанные на других
+языках программирования.
+
+<p align="JUSTIFY">
+Предположим, что при работе в системе Unix, необходимо использовать
+команду <tt>kill</tt>.
+
+Для осуществления этого, необходимо выполнить следующее:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>function</b> kill( pid : <b>in</b> Integer; 
+               sig : <b>in</b> Integer) <b>return</b> Integer;
+
+<b>pragma</b> Interface(C, kill);
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+В данном случае, первый параметр директивы компилятора <tt>Interface</tt> - это язык
+вызываемой подпрограммы, а второй - имя подпрограммы под которым она (подпрограмма)
+известна в программе на Аде.
+
+
+<p align="JUSTIFY">
+Пример пакета который импортирует функции написанные на Фортране
+может иметь следующий вид.
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>package</b> MATHS <b>is</b>
+        function sqrt(X : Float) <b>return</b> Float;
+        function exp (X : Float) <b>return</b> Float;
+<b>private</b>
+        <b>pragma</b> Interface(Fortran, sqrt);
+        <b>pragma</b> Interface(Fortran, exp);
+<b>end</b> MATHS;
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+Необходимо заметить, что директива компилятора <tt>Interface</tt> не может быть использована
+с настраиваемыми подпрограммами.
+
+
+
+<p>
+<h3><a name="s16.2">16.2 Связь с другими языками в Ada95</a></h3>
+
+<p align="JUSTIFY">
+Стандарт Ada95 внес в средства взаимодействия Ады с другими языками программирования
+некоторые изменения, которые облегчают использование Ады совместно с
+программным обеспечением написанным на других языках.
+
+Согласно стандарта Ada95, для организации взаимодействия с программным обеспечением,
+написанным на других языках программирования,
+можно использовать стандартные директивы компилятора
+<tt>Import</tt>, <tt>Export</tt>, <tt>Convention</tt> и <tt>Linker_Options</tt>.
+
+Кроме того, для описания трансляции типов данных между Адой и другими языками программирования,
+можно использовать предопределенную библиотеку - стандартный пакет <i>Interfaces</i>
+и его дочерние модули.
+
+
+
+<p><h4><a name="s16.2.1">16.2.1 Директивы компилятора</a></h4>
+
+
+<p align="JUSTIFY">
+Стандарт Ada95 содержит следующее описание стандартных директив компилятора
+<tt>Import</tt>, <tt>Export</tt>, <tt>Convention</tt> и <tt>Linker_Options</tt>:
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>pragma</b> Import(
+    [Convention =&gt;] <i>идентификатор_соглашения</i>, [Entity =&gt;] <i>локальное_имя</i>
+ [, [External_Name =&gt;] <i>строковое_выражение</i>]
+ [, [Link_Name =&gt;] <i>строковое_выражение</i>]);
+
+<b>pragma</b> Export(
+    [Convention =&gt;] <i>идентификатор_соглашения</i>, [Entity =&gt;] <i>локальное_имя</i>
+ [, [External_Name =&gt;] <i>строковое_выражение</i>]
+ [, [Link_Name =&gt;] <i>строковое_выражение</i>]);
+
+<b>pragma</b> Convention ([Convention =&gt;] <i>идентификатор_соглашения</i>,
+                 [Entity =&gt;] <i>локальное_имя</i>);
+
+<b>pragma</b> Linker_Options (<i>строковое_выражение</i>);
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+При описании синтаксиса этих директив компилятора подразумевается, что:
+
+
+
+<p>
+<dir><table width="80%">
+<tr>
+<td valign="TOP"><font size=1><tt>Convention</tt></td>
+<td valign="TOP"><font size=1>&nbsp;-&nbsp;</td>
+<td valign="TOP"><font size=1>
+обозначает язык или, точнее, соглашения (например, для вызова подпрограмм)
+используемые в конкpетном тpанслятоpе; в качестве <i>идентификатор_соглашения</i>
+могут использоваться:
+  <ul>
+  <li><tt>Ada</tt>
+  <li><tt>Instrinsic</tt>
+  <li><tt>C</>
+  <li><tt>Fortran</tt>
+  <li><tt>Cobol</tt>
+</ul>
+при этом, следует заметить, что обязательно поддерживаемыми являются только
+<i>Ada</i> и <i>Instrinsic</i>, кроме того, реализация конкретного компилятора
+может добавить любое другое значение
+
+</td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Entity</tt></td>
+<td valign="TOP"><font size=1>&nbsp;-&nbsp;</td>
+<td valign="TOP"><font size=1>
+обозначает имя идентификатора (например, имя вызываемой подпpогpаммы) в Ада-пpогpамме
+</td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>External_Name</tt></td>
+<td valign="TOP"><font size=1>&nbsp;-&nbsp;</td>
+<td valign="TOP"><font size=1>
+обозначает имя идентификатора в чужом модуле
+(модуле написанном на другом языке программирования)
+</td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Link_Name</tt></td>
+<td valign="TOP"><font size=1>&nbsp;-&nbsp;</td>
+<td valign="TOP"><font size=1>
+обозначает имя идентификатора с точки зpения линкера (pедактоpа связей)
+</td>
+</tr>
+
+</table></dir>
+
+
+<p align="JUSTIFY">
+Директива компилятора <tt>Import</tt> предназначена для импортирования объектов
+(подпрограмм или переменных),
+описанных на других языках программирования, в Ада-программу.
+
+С ее помощью можно вызывать подпрограммы или использовать переменные модулей которые
+написанны на других языках программирования.
+
+
+<p align="JUSTIFY">
+Директива компилятора <tt>Export</tt> предназначена для экспортирования объектов
+(подпрограмм или переменных),
+написанных на Аде, для их использования в модулях,
+написанных на других языках программирования.
+
+Следует заметить, что в модулях, написанных на других языках программирования,
+может потребоваться выполнение вызовов <tt>adainit</tt> и <tt>adafinal</tt>
+для осуществления правильной инициализации и деструктуризации
+импортированного Ада-кода.
+
+
+<p align="JUSTIFY">
+Директива компилятора <tt>Convention</tt> позволяет указать компилятору
+на необходимость использования определенных языковых соглашений
+для какого-либо объекта (подпрограммы или переменной),
+который впоследствии будет либо импортирован, либо экспортирован.
+
+
+<p align="JUSTIFY">
+Директива компилятора <tt>Linker_Options</tt> предназначена для передачи
+дополнительных опций линкеру (редактору связей).
+
+Содержимое строкового параметра этой директивы будет зависеть от используемого
+линкера.
+
+
+
+<p><h4><a name="s16.2.2">16.2.2 Интерфейсные пакеты</a></h4>
+
+
+<p align="JUSTIFY">
+Стандарт Ada95 определяет интерфейс взаимодействия с языками программирования
+<i>C</i>, <i>COBOL</i> и <i>Fortran</i>.
+
+Для облегчения осуществления связи программ Ады с этими языками программирования
+существует стандартно определенная иерархия пакетов, состоящия из пакета <i>Interfaces</i>
+и его дочерних модулей:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>package</b> Interfaces
+<b>package</b> Interfaces.C
+<b>package</b> Interfaces.C.Pointers
+<b>package</b> Interfaces.C.Strings
+<b>package</b> Interfaces.COBOL
+<b>package</b> Interfaces.Fortran
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Эти интерфейсные пакеты обеспечивают достаточно мощные средства
+для взаимодействия с другими языками программирования.
+
+
+
+<p>
+<h3><a name="s16.3">16.3 Взаимодействие с программами написанными на <i>C</i></a></h3>
+
+
+<p align="JUSTIFY">
+Обсуждение взаимодействия с программами написанными на <i>C</i>
+полагается на описания которые содержатся в стандартном пакете <i>Interfaces.C</i>.
+
+В частности, этот пакет предусматривает средства преобразования объектов
+с типами языка <i>C</i> в объектыс типами Ады, и обратно.
+
+
+
+<p><h4><a name="s16.3.1">16.3.1 Численные и символьные типы</a></h4>
+
+
+
+<p align="JUSTIFY">
+С помощью использования следующих типов, переменные или результаты выражений Ады
+могут быть конвертированы в форму, совместимую с языком <i>C</i>, и обратно:
+
+
+
+<p>
+<dir><table width="80%">
+<tr>
+<td valign="TOP"><font size=1><b>целочисленные типы</b></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><b>символьные типы</b></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><b>вещественные типы</b></td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Int</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>Char</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>C_Float</tt></td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Short</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>Wchar_T</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>Double</tt></td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Long</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>&nbsp;</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>Long_Double</tt></td>
+</tr>
+
+<tr>
+<td valign="TOP"><font size=1><tt>Size_T</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>&nbsp;</tt></td>
+<td valign="TOP"><font size=1>&nbsp;&nbsp;</td>
+<td valign="TOP"><font size=1><tt>&nbsp;</tt></td>
+</tr>
+</table></dir>
+
+
+<p align="JUSTIFY">
+Например, для передачи целочисленного значения переменной <tt>Item</tt>
+как параметра для функции языка <i>C</i> которая ожидает получить параметр типа <tt>long double</tt>
+можно использовать следующее выражение Ады <tt>Long_Double(Item)</tt>.
+
+
+
+<p><h4><a name="s16.3.2">16.3.2 Строки языка <i>C</i></a></h4>
+
+
+
+<p align="JUSTIFY">
+Описание массива символов языка <i>C</i> имеет следующий вид:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>type</b>  Char_Array  <b>is array</b> (Size_T <b>range</b> &lt;&gt;) <b>of aliased</b> Char;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Для представления строк, в языке <i>C</i> используются массивы символов заканчивающиеся нулевым
+символом.
+
+Нулевой символ используется как индикатор конца строки.
+
+Таким образом, описание строки <tt>Name</tt>, содержащей текст "<tt>Vasya</tt>",
+которая может быть передана как параметр для функции языка <i>C</i>
+может иметь следующий вид:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+Name  : <b>constant</b>  Char_Array := "Vasya" &amp; nul;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Примечательно, что <tt>nul</tt> используется для представления нулевого символа
+(индикатор конца строки) и не является зарезервированным словом Ады <tt><b>null</b></tt>.
+
+
+<p align="JUSTIFY">
+Для выполнения символьной конверсии можно использовать функции:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>function</b> To_C (Item: <b>in</b> Character) <b>return</b> Char;
+<b>function</b> To_Ada (Item: <b>in</b> Char) <b>return</b> Character;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Для выполнения строковой конверсии можно использовать функции:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>function</b> To_C (Item       : <b>in</b> String;
+               Append_Nul : <b>in</b> Boolean := True) <b>return</b> Char_Array;
+<b>function</b> To_Ada (Item     : <b>in</b> Char_Array;
+                 Trim_Nul : <b>in</b> Boolean := True) <b>return</b> String;
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+Не сложно догадаться, что функции с именами <tt>To_C</tt> должны использоваться для
+преобразования переменных в форму совместимую с языком <i>C</i>, а функии с именами <tt>To_Ada</tt>
+- обратно.
+
+
+
+<p><h4><a name="s16.3.3">16.3.3 Примеры организации взаимодействия с <i>C</i></a></h4>
+
+
+
+<p align="JUSTIFY">
+Простым примером импорта <i>C</i>-функции может служить
+пример использования функции <tt>read</tt> системы UNIX в процедуре, написанной на Аде:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>procedure</b> Read( File_descriptor : <b>in</b>     Integer;
+                Buffer          : <b>in out</b> String;
+                No_Bytes        : <b>in</b>     Integer;
+                No_Read         :    <b>out</b> Integer) <b>is</b>
+
+    <b>function</b> Read( File_descriptor : Integer;
+                   Buffer          : System.Address;
+                   No_Bytes        : Integer) <b>return</b> Integer;
+
+    <b>pragma</b> Import(C, read, "read");
+
+<b>begin</b>
+    No_Read := Read(File_descriptor,
+                    Buffer(Buffer<b>'<i>First</i></b>)<b>'<i>Address</i></b>,
+                    No_Bytes);
+<b>end</b> Read;
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+Проблема связи с <i>C</i> возникает в ситуации,
+когда необходимо взаимодействовать с функциями
+которые имеют список параметров с переменным числом параметров неоднородного типа.
+
+Примером такой функции может служить <i>C</i>-функция <tt>printf</tt>.
+
+Необходимо отметить, что подобные функции, по своей природе, не надежны,
+и не существует удовлетворительного способа решения этой проблемы.
+
+
+<p align="JUSTIFY">
+Однако, Ада позволяет взаимодействовать с функциями, имеющими переменное число
+параметров, но при этом тип параметров однороден.
+
+Для взаимодействие с такими функциями можно
+использовать типы неограниченных (<i>unconstrained</i>) массивов.
+
+
+<p align="JUSTIFY">
+Предположим, что существует функция, написанная на <i>C</i>, описание которой
+имеет следующий вид:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+void something(*int[]);
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+Мы можем использовать эту функцию в Аде следующим образом:
+
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>type</b> Vector <b>is array</b>(Natural <b>range</b> &lt;&gt;) <b>of</b> Integer;
+
+<b>procedure</b> Something(Item : Vector) <b>is</b>
+
+    <b>function</b> C_Something(Address : System.Address);
+    <b>pragma</b> Import(C, C_Something, "something");
+
+<b>begin</b>
+    <b>if</b> Item<b>'<i>Length</i></b> = 0 <b>then</b>
+        C_Something(System.Null_Address);
+    <b>else</b>
+        C_Something(Item(Item<b>'<i>First</i></b>)<b>'<i>Address</i></b>);
+    <b>end if</b>;
+<b>end</b> Something;
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+Рассмотрим более сложный пример, который демонстрирует использование
+<i>C</i>-функции <tt>execv</tt> системы UNIX, описанную в <i>C</i> следующим образом:
+
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+int execv(const char *path, char *const argv[]);
+</pre></dir>
+</td></tr></table>
+
+
+<p align="JUSTIFY">
+В данном случае, дополнительную сложность вызывает необходимость трансляции Ада-строк в массивы
+символов <i>C</i>-стиля.
+
+Перед тем как описывать непосредственную реализацию, необходимо сделать некоторые описания:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+----------------------------------------------------------
+<b>type</b> String_Ptr <b>is access all</b> String;
+<b>type</b> String_Array <b>is array</b>(Natural <b>range</b> &lt;&gt;) <b>of</b> String_Ptr;
+
+<b>function</b> execv( Path     : String;
+                Arg_List : String_Array) <b>return</b> Interfaces.C.Int;
+
+---------------------------------------------------------
+-- execv заменяет текущий процесс на новый.
+-- Список аргументов передается как параметры командной
+-- строки для вызываемой программы.
+--
+-- Для вызова этой подпрограммы можно:
+--
+-- Option2 : aliased String := "-b";
+-- Option3 : aliased String := "-c";
+-- Option4 : String := "Cxy";
+-- Result  : Interfaces.C.Int;
+-- ...
+-- Result := execv(Path =&gt; "some_program",
+--                 -- построение массива указателей на строки...
+--                 argv =&gt; String_Array'(new String'("some_program"),
+--                                       new String'("-a"),
+--                                       Option2'Unchecked_Access,
+--                                       Option3'Unchecked_Access,
+--                                       new String'('-' &amp; Option4));
+--
+-- Допустимо использовать любую комбинацию
+-- динамически размещаемых строк и 'Unchecked_Access
+-- к aliased переменным.
+-- Однако, необходимо отметить, что нельзя выполнить
+-- "some_String"'Access, поскольку Ада требует имя,
+-- а не значение, для отрибута 'Access
+
+------------------------------------------------------------
+</pre></dir>
+</td></tr></table>
+
+
+
+<p align="JUSTIFY">
+Теперь, реализация может быть выполнена следующим образом:
+
+
+<p><table BGCOLOR="E0E0E0" border=0 width="95%">
+<tr><td><font size=1>
+<dir><pre>
+
+<b>function</b> execv( Path : String;
+                argv : String_Array ) <b>return</b> Interfaces.C.Int <b>is</b>
+
+    Package C <b>renames</b> Interfaces.C;
+    Package Strings <b>renames</b> Interfaces.C.Strings;
+
+    C_Path  : <b>constant</b> Strings.Chars_Ptr(1..Path<b>'<i>Length</i></b> + 1)
+                                     := Strings.New_String(Path);
+
+    type Char_Star_Array <b>is array</b>(1..argv<b>'<i>Length</i></b> + 1) <b>of</b>
+                                        Strings.Char_Array_Ptr;
+
+    C_Argv : Char_Star_Array;
+    Index  : Integer;
+    Result : C.int;
+
+    ------------------------------------------------------------
+    <b>function</b> C_Execv( Path       : Strings.Char_Ptr;
+                      C_Arg_List : Strings.Char_Ptr) <b>return</b> C.int;
+    <b>pragma</b> Import(C, C_Execv, "execv");
+    ------------------------------------------------------------
+
+<b>begin</b>
+
+    -- установка массива указателей на строки
+
+    Index := 0;
+    <b>for</b> I <b>in</b> argv<b>'<i>Range</i></b> <b>loop</b>
+            Index := Index + 1;
+            C_Argv(Index) := Strings.New_String(argv(I).<b>all</b>));
+    <b>end loop</b>;
+
+
+    -- добавление C-значения null в конец массива адресов
+
+    C_Argv(C_Argv<b>'<i>Last</i></b>) := Strings.Null_Ptr;
+
+
+    -- передача адресов первых элементов каждого параметра,
+    -- как это ожидает C
+
+    Result := C_Execv( C_Path(1)<b>'<i>Address</i></b>, C_Argv(1)<b>'<i>Address</i></b>));
+
+
+    -- освобождение памяти, поскольку часто это не выполняется
+
+    <b>for</b> I <b>in</b> argv<b>'<i>Range</i></b> <b>loop</b>
+            Strings.Free(argv(I));
+    <b>end loop</b>;
+
+    Strings.Free(C_Path);
+
+    <b>return</b> Result;
+<b>end</b> execv;
+</pre></dir>
+</td></tr></table>
+
+
+
+
+<p align="JUSTIFY">
+Примечательно, что передается адрес первого элемента массива, а не адрес самого массива.
+
+Массивы, описываемые как неограниченные, зачастую содержат вектор
+с дополнительной информацией, которая включает верхнюю и нижнюю границу массива.
+
+
+
+
+
+
+<!--- footer --->
+
+
+
+
+<p><hr><table border=0 width="95%"><tr>
+<td align="left"><font size=2>Copyright (C) А.Гавва</td>
+<td align="right"><font size=2>V-0.4w май 2004</td>
+</tr></table><hr><p>
+
+
+
+
+</blockquote>
+</body>
+</html>
+

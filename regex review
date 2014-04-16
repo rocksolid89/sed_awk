@@ -1,0 +1,48 @@
+#regular expressions (regexp)# 
+Key to mastering sed & awk
+
+#metacharacters#
+
+^ - matches any character at the beginnign of a line
+  a. sed -ne '/^dog/p' animals.text
+  
+    sed options:
+      n - supress automatic printing of pattern space (matching lines or no matching lines);
+      without this option sed will print macthing lines and no matching lines as well
+      e - add the script to the commands to be executed
+      I - case insensetive
+      p - string output
+      
+
+$ - matches any characters at the end of the line 
+
+   a. sed -ne /dog$/p animals.txt
+   
+task : match line which contains only 'dog'
+    a. sed -ne '/^dog$/p' animals
+    b. sed -ne '/^dog$/p' - inputs from STDIN. enter - end string; CTRL-D terminate input
+    c. using pipe cat animals | sed -ne '/^dog$/p'
+case-insensetive string
+    d.sed -ne '/^dog$/Ip' prints matches case-insensitively
+
+    
+. - matches with  any character (tipycally expect new line)
+
+sed -ne '/^d..$/Ip' animals
+sed -ne '/^d.../Ip' animals
+
+#REGEX QUANTIFIERS# (кванторы)
+* - 0 or more matches of the previous character
++ - 1 or more of the previous character
+? - 0 or 1 of previous character
+
+  a. sen -ne '/^d.+$/Ip' animals - this will fails
+  note: use escape symbol '\' with quantifiers in regexp
+
+##CHARACTER CLASSES## {match one and only one character}
+search for a range of character
+a. [0-9] {zero thru nine}
+b. [a-z][A-Z]
+
+sen -ne '/^d[0-9]/Ip' animals
+sen -ne '/^d.\+[0-9]/Ip' animals (dog1)

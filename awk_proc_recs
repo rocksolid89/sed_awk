@@ -1,0 +1,31 @@
+####awk and processing records######
+
+task:process multiple delimiters in the same file
+
+awk -F "[;: ]" '{print}' animals2
+awk 'BEGIN {FS="[ ;:]"}; {print $2}' animals2
+awk -f script file   source file
+
+task: process multiple delimiters on the same line
+
+note: script doesn't change,however, intput file does
+
+task: normalize output field separator (OFS)
+
+BEGIN { OFS = ":"}
+
+task: build animal classes array from the list of classes in file
+
+in main loop of awk script files
+  {animalclasses[NR] = $4 }
+
+task: extract Daemon entries from /var/log/messages
+
+  a. extract kernel messages (with awk)
+      - all messages from dhcpcd daemon
+      /dhcpcd/ {print} ( you might to use some filters via grep or awk )
+      
+      $8 ~ /dhcpd/
+      
+      
+

@@ -1,0 +1,91 @@
+###awk variables####
+
+types: 
+1. system vars - i.e. FILENAME, RS, Output record separator
+2. scalars - i.e. a=4
+3. arrays - i.e. variable name[n]
+
+note: variables not to be declared. awk automaticly registers them in memory
+note: variable names - are case sensitive
+
+#system variables:
+FILENAME - name of current input file
+FNR - used when multiple files are used
+FS - filed separator - default white space -can be single character, including via regEX
+OFS - output field separator - default white space
+NF - number of fields in the current record
+NR - current record number (it is auto-summed when referenced in END section)
+RS - record separator - defaults to a new line
+ORS - output record separtor - defaults to a new line
+ARGV - array of command-line arguments- indexes at 0, begining with $1 
+ARGC - total number of command line arguments
+ENVIRON - array of environment variables for current user
+
+
+
+
+###tasks#####
+1. print key system variables
+  a. print filename  ( print after the begin block )
+    { print "filename is : " FILENAME }
+      note : when using this construction in BEGIN section filename not printing,because this section runs before processing input file
+  b. print number of fields pre record  NF
+  c. print current record number NR
+  d. print ARGC - return total number of arguments from command line
+
+####scalar variables####
+
+var_name = value;
+
+example: age = 50
+
+NOTE: Set scalars in the begin section , however, they can be, if required, set in the main loop
+
+set variable to string using double quotes:
+
+fullname = "Vladimir Chernyakov"
+
+concatenate variables by separating the values using a space
+
+concatination sample: fullname = "Vladimir" "Chernyakov"
+
+
+###array variables####
+1. list of information
+
+Task: use simple array to store age
+  age[0] = 50
+Task: use 'split' function to create arrays automaticly
+  arra1 = split( string, array, separator)
+  
+####operators#####
+1. comparison tools for expression
+  2 types:
+    - relational: ==; !=; <; >; >=; <=; ~ ( RegEx matches); !~ (doesn't match)
+    - boolean: or-|| and-&& not-! (combine comparisons)
+
+task: print something if current record number is > 10
+  a. NR > 10 (NR  - is current record number )
+
+task: extract record with only two fields 
+  a. NF == 2 { print $0 } (NF >= 2)
+
+task:find records than have at least two fields and are positioned at record 5 or higher
+  a. NF >=2 && NR >= 5
+
+  
+  
+###awk loops####
+features: while, do, and for
+  
+  { while (NR > 10) print "Granter than 10" }
+  
+  {for (i=1; i <=10; i++) print $i }
+  
+  do loops
+  
+  do action while (condition) - it's simply enought )
+  
+
+
+

@@ -1,0 +1,25 @@
+###processing various email adresses with awk####
+
+Features: ability to manipulate various e-mail addresses embeded within text documents via RegExes
+
+Task: parse various e-mail addresses
+  
+  awk -F@ '{print}' emails
+  awk -F@ '{print $1,$2}' emails #this will print symbols before and after @
+  awk -F[@.] '{print $1,$2,$3 } {print "Number of fields" NF}' emails #in this example we use two field separators and 3 fields for rocksolid_89@mail.ru
+  awk -F[@.] ' /\w@\w/ {print $1,$2,$3}' emails #e-mail like user @ info.com will not print (w - word (may contains numbers,underscores, etc))
+  
+Task: print e-mails only for specific Top Level Domains
+
+  print e-mails with TOD .ru (Top Level Domain)
+  
+  awk -F[@.] ' $3~/ru/ {print}' emails
+  awk -F[@.] ' $3~/(ru|com|gov)/ {print}' emails #print emails for TOD: ru and com
+  awk -F[@.] ' BEGIN {IGNORECASE=1} $3~/(ru|com|gov)/ {print}' emails #case sensetivity is 'off' now
+  
+  awk -F[@.] ' BEGIN {IGNORECASE=1} $3~/(ru|com|gov)/ {print} END {print NR}' emails # print number of all lines in processed file
+  awk -F[@.] ' BEGIN {IGNORECASE=1} $3~/(ru|com|gov)/ {++a;print} END {print a}' emails # print number of all MATCHED lines in processed file
+ 
+Note: NR wil display total number of records looped over
+      ++a variable display total number of records matched (that is a big difference)
+ awk -F[@.] ' BEGIN {IGNORECASE=1} /\w@.*(ru|com|gov)/ {++a;print} END {print a}' emails # this will display only correct mails like 'word'@'word'.'TOD'

@@ -1,0 +1,19 @@
+#this my second awk script file
+
+
+#BEGIN {FS = "[ :;]"; OFS = "\t\t\t"; print "begin processing document"}
+BEGIN {printf ("%-16s %-14s %-11s\n", "Date", "Server", "Daemon") }
+
+#main loop of awk script file
+#{print $1,$2,$3}
+#{animalclass[NR] = $2 }
+
+
+/dbus/ {printf("%3s %2s %10s %10s %10s\n", $1,$2,$3,$4,$5)}
+
+END {print "processing is complete"
+
+#for (i=1; i<= NR; i++)
+#printf("%-s%3d%1s%5s\n",tolower("ANIMAL CLASS"), i, ": ",toupper(animalclass[i]))
+
+}

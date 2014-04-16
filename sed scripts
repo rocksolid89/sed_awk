@@ -1,0 +1,26 @@
+##scriptining with sed###
+
+#apply changes to multiple files#
+note: sed supports globbing via wildcards: *
+
+sed -ne 's/\(.*\)\([0-9]\)/\1 \2/p' animals* -- affects all files wich names contains animals,animals1 etc
+
+##scripts##
+note: ability to dump 1 or more instruction into 1 file
+
+sed -f script_file_ name text_file
+
+task: perform multiple transformations on animals file
+1.^$/d - delete all blank lines from file
+2.s/dog/frog/I - substitute dog to frog, case insensetive
+3.s/tiger/lion/I - tiger->lion (global)
+4.
+5.
+6.s/\([a-z]\)*\([0-9]\)*/I\1/p - trailing numeric values from alpha
+
+
+sed scripting rules:
+1 - all rules applies to each lines
+2 - applies all changes dynamically to the pattern space
+3 - sed always work with the current line
+

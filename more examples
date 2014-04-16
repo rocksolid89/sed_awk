@@ -1,0 +1,35 @@
+####more examples of sed and awk######
+ using sed and awk together and separately
+ 
+task: make changes in advice* files on local disk drive
+
+  a. change adivices contains 64 (files: advice2 & advise3)
+    - change only advice2 files
+      sed -i.bak -e 's/advice\/64\///' advice2  - replace line "эдвайс для дизайнера" to the blank line
+    -effect the change to multiple files and create .new advice files (without clubbering the source files)
+      for i in 'ls -A' advice*; do sed -e 's/advice\/64\///' advice* $i > $i.new; done - not work. don't know why )
+	***spend a lot of time with wrong place of escape symbol "\"***
+	
+  b. Strip '.new' from newly created files
+      echo "adive3.new" | sed -e 's/\.new//'  - example of renaming files
+      
+      for i in `ls -A | sed -e 's/\.new//'`; do echo $i; done
+      
+      for i in `ls -A | sed -e 's/\.new//'`; do mv $i.new $i; done
+      
+  c. Remove multiple strings from one files (file: advice1)
+     - we need to delete all <li> Free Sheeping </li> lines from our file
+     
+     sed -i.bak -e 's/ <li>Free Sheeping <\/li>//' advice1 
+      or we can redirect output to the new file
+     sed -i.bak -e 's/ <li>Free Sheeping <\/li>//' advice1 > advice1.new  
+     
+####Use awk and sed together to update /var/log/messages###
+
+task: update month information in log file for December 30 (for dhcpd[xxxx] messages)
+
+we currently works with 1,2 and 5 columns
+
+a. awk '$1 ~/Dec/ && $2 ~ /30/ && $5 ~ /dhcp/ {print }' /var/log/messages
+b. awk '$1 ~/Dec/ && $2 ~ /30/ && $5 ~ /dhcp/ {print }' /var/log/messages | sed -ne 's/dec/December/pI'
+c. awk '$1 ~/Dec/ && $2 ~ /30/ && $5 ~ /dhcp/ {++lines} {print} END {print "All matched lines:" lines }' /var/log/messages
